@@ -64,15 +64,15 @@ def find_AppendDelete(df_old,df_new,id_field):
 
 
 
-# input
+# # # # #     input       # # # # #
 gush_exists  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\data\data.gdb\PARCEL_ALL'
 gush_new     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\data\input.gdb\PARCEL_ALL'
 
-# output
+# # # # #     output       # # # # #
 gdb_path     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results'
 fgdb_topocad = gdb_path + '\\' + Get_date(r'topocad_X')
 
-# analysis
+# # # # #     analysis      # # # # #
 
 # if arcpy.Exists(fgdb_topocad):
 #     arcpy.Delete_management(fgdb_topocad)
@@ -88,12 +88,3 @@ create_midPoint(gush_old)
 create_midPoint(gush_new)
 
 df = find_AppendDelete(gush_old,gush_new,'ID')
-
-
-# df2.rename(columns = {'_merge':'UPDATE_CODE'}, inplace = True)
-
-# s.replace(1, 5)
-# s.replace(1, 5)
-# s.replace(1, 5)
-
-
