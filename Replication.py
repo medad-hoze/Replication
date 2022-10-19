@@ -36,7 +36,7 @@ def toStr(series):
     return series.astype (str)
 
 @calculate_time
-def create_ID(df,*args):
+def create_ID(df,args):
     if len(args) == 3:
         condi = ((df[args[0]].isnull()) | (df[args[0]] == 0))
         yes   = toStr(df[args[1]]) + '--' + toStr(df[args[2]]) 
@@ -206,6 +206,25 @@ def copyingToRepli(gdb_old,bankal,fgdb_topocad):
     for i in polygons_fcs:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i)[:-2] + '02')
 
 
+
+def checkFieldsForID(check):
+
+    if 'PARCEL_ALL' in check:
+        fields = ['GUSH_SUFFIX','GUSH_NUM','PARCEL']
+    elif 'SUB_GUSH_ALL'in check:
+        fields = ['GUSH_SUFFIX','GUSH_NUM']
+    elif 'TALAR' in check:
+        fields = ['TALAR_NUM','TALAR_YEAR']
+    elif 'SHEET_K' in check:
+        fields = ['GUSH_SUFFIX','GUSH_NUM','SHEET_K_ID']
+    elif 'TALAR_TABLE' in check:
+        fields = ['TALAR_NUM','TALAR_YEAR','TALAR_ID']
+    else:
+        return None
+
+    return fields
+
+
 # # # # #  input  # # # # 
 
 gdb_old = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb'
@@ -214,94 +233,45 @@ bankal  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results
 # # # # #     output       # # # # #
 gdb_path     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results'
 
-fgdb_topocad  = gdb_path + '\\' + Get_date(r'topocad') + '.gdb'
-
+fgdb_topocad     = gdb_path + '\\' + Get_date(r'topocad') + '.gdb'
+fgdb_TopoCAD_REP = gdb_path + '\\' + Get_date(r'fgdb_TopoCAD_REP') + '.gdb'
 
 # # # # #     analysis      # # # # #
 
 if not arcpy.Exists(fgdb_topocad):
     Create_GDB(fgdb_topocad)
 
+if not arcpy.Exists(fgdb_TopoCAD_REP):
+    Create_GDB(fgdb_TopoCAD_REP)
+
 
 copyingToRepli(gdb_old,bankal,fgdb_topocad)
 
-# # # # # #       Parcels raplica       # # # # #
-
-# layer_old  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\data\data.gdb\PARCEL_ALL'
-# layer_new  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\data\input.gdb\PARCEL_ALL'
-
-
-# layer_name = nameLayer(layer_new,fgdb_topocad)
-
-# df_old = Read_Fc(layer_old)
-# df_new = Read_Fc(layer_new)
-
-# create_ID(df_old,'GUSH_SUFFIX','GUSH_NUM','PARCEL') 
-# create_ID(df_new,'GUSH_SUFFIX','GUSH_NUM','PARCEL') 
-
-# createReplic(df_old,df_new,layer_name)
-
-# # # # # # #        Gush raplica
-
-# layer_old  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb\SUB_GUSH_ALL_01'
-# layer_new  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb\SUB_GUSH_ALL_02'
-
-# layer_name = nameLayer(layer_new,fgdb_topocad)
-
-# df_old = Read_Fc(layer_old)
-# df_new = Read_Fc(layer_new)
-
-# create_ID(df_old,'GUSH_SUFFIX','GUSH_NUM') 
-# create_ID(df_new,'GUSH_SUFFIX','GUSH_NUM') 
-
-# createReplic(df_old,df_new,layer_name)
+arcpy.env.workspace = fgdb_topocad
+polygons_fcs = list(set([i[:-2] for i in arcpy.ListFeatureClasses()]))
+layers = [[fgdb_topocad + '\\' + i+'01',fgdb_topocad + '\\' + i+'02'] for i in polygons_fcs]
 
 
-# # # # #       TALAR 
+for i in layers:
 
-# layer_old  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb\TALAR_01'
-# layer_new  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb\TALAR_02'
+    print (i)
 
-# layer_name = nameLayer(layer_new,fgdb_topocad)
+    fields = checkFieldsForID(i[0])
+    if not fields:
+        print ('layer: {}, dosent have fields yet'.format(i))
+        continue
 
-# df_old = Read_Fc(layer_old)
-# df_new = Read_Fc(layer_new)
+    layer_old = i[0]
+    layer_new = i[1]
 
-# create_ID(df_old,'TALAR_NUM','TALAR_YEAR') 
-# create_ID(df_new,'TALAR_NUM','TALAR_YEAR') 
+    layer_name = nameLayer(layer_new,fgdb_TopoCAD_REP)
 
-# createReplic(df_old,df_new,layer_name)
+    df_old = Read_Fc(layer_old)
+    df_new = Read_Fc(layer_new)
 
+    create_ID(df_old,fields) 
+    create_ID(df_new,fields) 
 
-# # # # #       SHEET K 
+    createReplic(df_old,df_new,layer_name)
 
-# layer_old  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb\SHEET_K_01'
-# layer_new  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb\SHEET_K_02'
-
-# layer_name = nameLayer(layer_new,fgdb_topocad)
-
-# df_old = Read_Fc(layer_old)
-# df_new = Read_Fc(layer_new)
-
-# create_ID(df_old,'GUSH_SUFFIX','GUSH_NUM','SHEET_K_ID') 
-# create_ID(df_new,'GUSH_SUFFIX','GUSH_NUM','SHEET_K_ID') 
-
-# createReplic(df_old,df_new,layer_name)
-
-
-
-# # # # #       TALAR Table 
-
-# layer_old  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb\TALAR_TABLE_01'
-# layer_new  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb\TALAR_TABLE_02'
-
-# layer_name = nameLayer(layer_new,fgdb_topocad)
-
-# df_old = Read_Fc(layer_old)
-# df_new = Read_Fc(layer_new)
-
-# create_ID(df_old,'TALAR_NUM','TALAR_YEAR','TALAR_ID') 
-# create_ID(df_new,'TALAR_NUM','TALAR_YEAR','TALAR_ID') 
-
-# df_new = createReplic(df_old,df_new,layer_name)
 
