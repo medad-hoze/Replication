@@ -16,7 +16,7 @@ def calculate_time(func):
         end = time.time()
         print ('---------------------------')
         print ('Func: ' +  func.__name__)
-        print ("Total time: ", round(end - begin,2))
+        print ("Total time: ", round(end - begin))
         print ('---------------------------')
  
     return inner1
@@ -147,7 +147,7 @@ def createShapeArea(df):
 
     def shapeToArea(value):
         if value:
-            return str(round(value.area,2))
+            return str(round(value.area))
         else:
             return None
 
@@ -190,7 +190,7 @@ def createReplic(gush_old,gush_new,New_layer):
 
 def nameLayer(sourceName,newGDB):
     name_layer    = os.path.basename(sourceName)
-    parcel_layer  = newGDB + '\\' + name_layer
+    parcel_layer  = newGDB + '\\' + name_layer[:-3]
     return parcel_layer
 
 
@@ -211,7 +211,7 @@ def checkFieldsForID(check):
 
     if 'PARCEL_ALL' in check:
         fields = ['GUSH_SUFFIX','GUSH_NUM','PARCEL']
-    elif 'SUB_GUSH_ALL'in check:
+    elif 'SUB_GUSH_ALL_'in check:
         fields = ['GUSH_SUFFIX','GUSH_NUM']
     elif 'TALAR' in check:
         fields = ['TALAR_NUM','TALAR_YEAR']
@@ -219,6 +219,10 @@ def checkFieldsForID(check):
         fields = ['GUSH_SUFFIX','GUSH_NUM','SHEET_K_ID']
     elif 'TALAR_TABLE' in check:
         fields = ['TALAR_NUM','TALAR_YEAR','TALAR_ID']
+    elif 'GVUL_PSAK_DIN' in check:
+        fields = ['GUSH_SUFFIX','PARCEL_','GUSH_NUM']
+    elif 'SUB_GUSH_ALL_SHUMA' in check:
+        fields = ['GUSH_SUFFIX','GUSH_NUM']
     else:
         return None
 
@@ -234,7 +238,7 @@ bankal  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results
 gdb_path     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results'
 
 fgdb_topocad     = gdb_path + '\\' + Get_date(r'topocad') + '.gdb'
-fgdb_TopoCAD_REP = gdb_path + '\\' + Get_date(r'fgdb_TopoCAD_REP') + '.gdb'
+fgdb_TopoCAD_REP = gdb_path + '\\' + Get_date(r'TopoCAD_REP') + '.gdb'
 
 # # # # #     analysis      # # # # #
 
@@ -273,5 +277,3 @@ for i in layers:
     create_ID(df_new,fields) 
 
     createReplic(df_old,df_new,layer_name)
-
-
