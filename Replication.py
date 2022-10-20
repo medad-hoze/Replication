@@ -229,16 +229,38 @@ def checkFieldsForID(check):
     return fields
 
 
+def copy_current(new_gdb,*args):
+    for i in args:
+        print (i)
+        if 'topocad' in i:
+            new_name = new_gdb + '\\'+ os.path.basename(i).split('_')[0] + '.gdb'
+            print (new_name)
+            if arcpy.Exists(new_name):
+                arcpy.Delete_management(new_name)
+            arcpy.Copy_management(i,new_name)
+        if 'TopoCAD_REP' in i:
+            new_name = new_gdb + '\\'+ os.path.basename(i)[:11] + '.gdb'
+            print (new_name)
+            if arcpy.Exists(new_name):
+                arcpy.Delete_management(new_name)
+            arcpy.Copy_management(i,new_name)
+
+
 # # # # #  input  # # # # 
 
-gdb_old = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2018.gdb'
-bankal  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2019.gdb' #Fake
+gdb_old = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\current\topocad.gdb'
+bankal  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2019.gdb' #Fake put bankal
 
 # # # # #     output       # # # # #
-gdb_path     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results'
+gdb_path_archive     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\archive'
+gdb_path_current     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\current'
 
-fgdb_topocad     = gdb_path + '\\' + Get_date(r'topocad') + '.gdb'
-fgdb_TopoCAD_REP = gdb_path + '\\' + Get_date(r'TopoCAD_REP') + '.gdb'
+###### copys 
+fgdb_topocad     = gdb_path_archive + '\\' + Get_date(r'topocad') + '.gdb'
+fgdb_TopoCAD_REP = gdb_path_archive + '\\' + Get_date(r'TopoCAD_REP') + '.gdb'
+
+##### current
+
 
 # # # # #     analysis      # # # # #
 
@@ -248,7 +270,6 @@ if not arcpy.Exists(fgdb_topocad):
 if not arcpy.Exists(fgdb_TopoCAD_REP):
     Create_GDB(fgdb_TopoCAD_REP)
 
-
 copyingToRepli(gdb_old,bankal,fgdb_topocad)
 
 arcpy.env.workspace = fgdb_topocad
@@ -257,8 +278,6 @@ layers = [[fgdb_topocad + '\\' + i+'01',fgdb_topocad + '\\' + i+'02'] for i in p
 
 
 for i in layers:
-
-    print (i)
 
     fields = checkFieldsForID(i[0])
     if not fields:
@@ -277,3 +296,5 @@ for i in layers:
     create_ID(df_new,fields) 
 
     createReplic(df_old,df_new,layer_name)
+
+copy_current(gdb_path_current,fgdb_topocad,fgdb_TopoCAD_REP)
