@@ -196,6 +196,9 @@ def nameLayer(sourceName,newGDB):
 
 def copyingToRepli(gdb_old,bankal,fgdb_topocad):
 
+    if not arcpy.Exists(gdb_old):
+        gdb_old = bankal
+ 
     arcpy.env.workspace = gdb_old
     polygons_fcs = [i for i in arcpy.ListFeatureClasses("", "POLYGON")  if i.split('_')[-1] == '02']
     for i in polygons_fcs:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i)[:-2] + '01')
@@ -204,6 +207,11 @@ def copyingToRepli(gdb_old,bankal,fgdb_topocad):
     arcpy.env.workspace = bankal
     polygons_fcs = [i for i in arcpy.ListFeatureClasses("", "POLYGON")  if i.split('_')[-1] == '02']
     for i in polygons_fcs:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i)[:-2] + '02')
+
+
+    arcpy.env.workspace = bankal
+    PointRep = [i for i in arcpy.ListFeatureClasses("", "POINT")  if 'Otentic_Points' in  i.split('_')[0]]
+    for i in PointRep:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i) + '_REP')
 
 
 
@@ -246,14 +254,40 @@ def copy_current(new_gdb,*args):
             arcpy.Copy_management(i,new_name)
 
 
+def createFolder(dic):
+    try:
+        if not os.path.exists(dic):
+            os.makedirs(dic)
+    except OSError:
+        print ("Error Create dic")
+    return dic
+
+def get_out_put_input_folder():
+    scriptPath    = os.path.abspath (__file__)
+    scriptFolder  = os.path.dirname (scriptPath)
+    main_folder   = os.path.dirname (scriptFolder)
+    return main_folder
+
+
+
 # # # # #  input  # # # # 
 
-gdb_old = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\current\topocad.gdb'
+# gdb_old = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\current\topocad.gdb'
+gdb_old = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\archive\topocad_14_8_2018.gdb'  #Fake put current
+
 bankal  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2019.gdb' #Fake put bankal
 
 # # # # #     output       # # # # #
-gdb_path_archive     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\archive'
-gdb_path_current     = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\current'
+
+
+main_folder      = get_out_put_input_folder()
+result           = main_folder + '\\' + 'Results'
+gdb_path_archive = result      + '\\' + 'archive'
+gdb_path_current = result      + '\\' + 'current'
+
+createFolder(result)
+createFolder(gdb_path_archive)
+createFolder(gdb_path_current)
 
 ###### copys 
 fgdb_topocad     = gdb_path_archive + '\\' + Get_date(r'topocad') + '.gdb'
@@ -298,3 +332,4 @@ for i in layers:
     createReplic(df_old,df_new,layer_name)
 
 copy_current(gdb_path_current,fgdb_topocad,fgdb_TopoCAD_REP)
+
