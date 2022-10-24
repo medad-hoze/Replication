@@ -188,25 +188,28 @@ def createReplic(gush_old,gush_new,New_layer):
 
     return df_new
 
-def nameLayer(sourceName,newGDB):
-    name_layer    = os.path.basename(sourceName)
-    parcel_layer  = newGDB + '\\' + name_layer[:-3]
-    return parcel_layer
+
+def copyingToRepli(current_gdb,bankal,fgdb_topocad):
+
+    if not arcpy.Exists(current_gdb):
+        print ('current not exists')
+        current_gdb = bankal
+        arcpy.env.workspace = current_gdb
+        print (current_gdb)
+        polygons_fcs = [i for i in arcpy.ListFeatureClasses("", "POLYGON") if i]
+        for i in polygons_fcs:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i)+ '_01')
+        for i in polygons_fcs:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i)+ '_02')
+        return
 
 
-def copyingToRepli(gdb_old,bankal,fgdb_topocad):
-
-    if not arcpy.Exists(gdb_old):
-        gdb_old = bankal
- 
-    arcpy.env.workspace = gdb_old
+    arcpy.env.workspace = current_gdb
     polygons_fcs = [i for i in arcpy.ListFeatureClasses("", "POLYGON")  if i.split('_')[-1] == '02']
     for i in polygons_fcs:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i)[:-2] + '01')
 
     # # # #   FAKE - only for testing !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! # # # # 
     arcpy.env.workspace = bankal
-    polygons_fcs = [i for i in arcpy.ListFeatureClasses("", "POLYGON")  if i.split('_')[-1] == '02']
-    for i in polygons_fcs:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i)[:-2] + '02')
+    polygons_fcs = [i for i in arcpy.ListFeatureClasses("", "POLYGON")] 
+    for i in polygons_fcs:arcpy.management.Copy(i,fgdb_topocad + '\\' + os.path.basename(i) + '_02')
 
 
     arcpy.env.workspace = bankal
@@ -272,10 +275,11 @@ def get_out_put_input_folder():
 
 # # # # #  input  # # # # 
 
-# gdb_old = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\current\topocad.gdb'
-gdb_old = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results\archive\topocad_14_8_2018.gdb'  #Fake put current
 
-bankal  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2019.gdb' #Fake put bankal
+bankal = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\banakl2.gdb'  #Fake put current
+
+# bankal  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\Results_Yovav\topocad_14_8_2019.gdb' #Fake put bankal
+# bankal  = r'C:\Users\Administrator\Desktop\medad\python\Work\replication\data\data.gdb'
 
 # # # # #     output       # # # # #
 
@@ -284,6 +288,9 @@ main_folder      = get_out_put_input_folder()
 result           = main_folder + '\\' + 'Results'
 gdb_path_archive = result      + '\\' + 'archive'
 gdb_path_current = result      + '\\' + 'current'
+
+current_topocad     = gdb_path_current + '\\' + 'topocad.gdb'
+current_TopoCAD_REP = gdb_path_current + '\\' + 'TopoCAD_REP.gdb'
 
 createFolder(result)
 createFolder(gdb_path_archive)
@@ -304,12 +311,13 @@ if not arcpy.Exists(fgdb_topocad):
 if not arcpy.Exists(fgdb_TopoCAD_REP):
     Create_GDB(fgdb_TopoCAD_REP)
 
-copyingToRepli(gdb_old,bankal,fgdb_topocad)
+copyingToRepli(current_topocad,bankal,fgdb_topocad)
 
 arcpy.env.workspace = fgdb_topocad
 polygons_fcs = list(set([i[:-2] for i in arcpy.ListFeatureClasses()]))
 layers = [[fgdb_topocad + '\\' + i+'01',fgdb_topocad + '\\' + i+'02'] for i in polygons_fcs]
 
+print (layers)
 
 for i in layers:
 
@@ -321,7 +329,10 @@ for i in layers:
     layer_old = i[0]
     layer_new = i[1]
 
-    layer_name = nameLayer(layer_new,fgdb_TopoCAD_REP)
+    print (layer_old)
+    print (layer_new)
+
+    layername = fgdb_TopoCAD_REP + '\\' + os.path.basename(layer_new)[:-3]
 
     df_old = Read_Fc(layer_old)
     df_new = Read_Fc(layer_new)
@@ -329,7 +340,7 @@ for i in layers:
     create_ID(df_old,fields) 
     create_ID(df_new,fields) 
 
-    createReplic(df_old,df_new,layer_name)
+    createReplic(df_old,df_new,layername)
 
 copy_current(gdb_path_current,fgdb_topocad,fgdb_TopoCAD_REP)
 
